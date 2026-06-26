@@ -29,15 +29,48 @@
     flex-direction: column;
     align-items: center;
     overflow-x: hidden;
-    padding: 0 0 100px;
+    padding: 0 0 120px;
   }
   header {
     width: 100%; max-width: 480px;
     display: flex; justify-content: space-between; align-items: center;
-    padding: 16px 20px 10px;
+    padding: 16px 20px 8px;
   }
   header .title { font-size: 18px; font-weight: 700; color: var(--accent); }
   header .info { font-size: 13px; color: var(--muted); }
+
+  /* 目标预览 */
+  .target-bar {
+    margin: 4px 16px 0;
+    padding: 8px 12px;
+    background: var(--panel);
+    border-radius: 10px;
+    width: calc(100% - 32px); max-width: 440px;
+  }
+  .target-bar-header {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-bottom: 8px;
+  }
+  .target-bar-header span { font-size: 12px; color: var(--muted); }
+  .btn-hint {
+    font-size: 12px; padding: 4px 10px;
+    border: 1px solid rgba(255,255,255,0.2); border-radius: 8px;
+    background: transparent; color: var(--muted); cursor: pointer;
+    transition: all 0.15s;
+  }
+  .btn-hint:hover, .btn-hint.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+  .target-row {
+    display: flex; gap: 4px; flex-wrap: wrap;
+  }
+  .target-cell {
+    width: 36px; height: 36px; border-radius: 6px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px; font-weight: 700;
+    border: 2px solid rgba(255,255,255,0.1);
+    transition: opacity 0.2s;
+  }
+  .target-cell.dim { opacity: 0.2; }
+
   .board-wrap {
     padding: 8px;
     background: var(--panel);
@@ -74,20 +107,21 @@
   .cell.locked::after {
     content: '🔒';
     position: absolute;
-    font-size: calc(min(5vw, 14px));
-    top: 1px; right: 2px;
+    font-size: calc(min(4vw, 12px));
+    top: 0px; right: 1px;
     z-index: 2;
+    filter: drop-shadow(0 0 2px #fff);
   }
   .cell.highlighted .dot {
     box-shadow: 0 0 0 3px #FFE066, 0 0 12px #FFE06688, inset -2px -2px 6px rgba(0,0,0,0.3);
     transform: scale(1.08);
   }
   .cell.in-buffer {
-    background: rgba(255,255,255,0.04);
-    border: 2px dashed rgba(255,255,255,0.2);
+    background: rgba(255,255,255,0.06);
+    border: 2px dashed rgba(255,255,255,0.25);
     border-radius: 6px;
   }
-  .cell.in-buffer .dot { opacity: 0.25; }
+  .cell.in-buffer .dot { opacity: 0.2; }
   .cell.no-drop .dot { animation: shake 0.3s; }
   @keyframes shake {
     0%,100%{transform:translateX(0)} 20%{transform:translateX(-4px)} 60%{transform:translateX(4px)}
@@ -95,6 +129,10 @@
   .cell.popping .dot { animation: pop 0.25s ease; }
   @keyframes pop {
     0%{transform:scale(0);opacity:0} 70%{transform:scale(1.2)} 100%{transform:scale(1);opacity:1}
+  }
+  /* 目标提示高亮 */
+  .cell.hint-match .dot {
+    box-shadow: 0 0 0 2px #fff4, 0 0 8px #fff4;
   }
 
   .buffer-wrap {
@@ -115,7 +153,7 @@
     flex-wrap: wrap;
   }
   .buf-slot {
-    width: 52px; height: 52px;
+    min-width: 52px; height: 52px;
     border-radius: 10px;
     border: 2px solid rgba(255,255,255,0.1);
     display: flex; flex-direction: column;
@@ -124,17 +162,20 @@
     transition: all 0.15s;
     position: relative;
     background: rgba(255,255,255,0.04);
+    padding: 4px 6px;
+    gap: 2px;
   }
   .buf-slot.empty { border-style: dashed; opacity: 0.3; cursor: default; }
   .buf-slot.full:hover { transform: scale(1.06); box-shadow: 0 4px 12px rgba(0,0,0,0.4); }
   .buf-slot .dot {
     width: 32px; height: 32px; border-radius: 50%;
     box-shadow: inset -2px -2px 6px rgba(0,0,0,0.3), inset 2px 2px 6px rgba(255,255,255,0.15);
+    flex-shrink: 0;
   }
   .buf-slot .count {
     font-size: 11px; font-weight: 700;
     color: rgba(255,255,255,0.8);
-    position: absolute; bottom: 3px; right: 5px;
+    line-height: 1;
   }
   .buf-slot.cannot-return { animation: pulse-red 0.5s; }
   @keyframes pulse-red { 0%,100%{border-color:rgba(255,255,255,0.1)} 50%{border-color:var(--accent)} }
@@ -190,7 +231,7 @@
   #win-overlay .btn { width: 100%; background: var(--accent); margin-top: 8px; }
 
   .level-selector {
-    display: flex; gap: 8px; margin: 6px 16px;
+    display: flex; gap: 8px; margin: 4px 16px 0;
     width: calc(100% - 32px); max-width: 440px;
     overflow-x: auto; padding-bottom: 4px;
   }
@@ -204,14 +245,6 @@
   .level-tab.active { background: var(--accent); color: #fff; border-color: var(--accent); }
 
   .hint-text { font-size: 12px; color: var(--muted); text-align: center; margin: 6px 0 10px; }
-
-  .board-locked-hint {
-    position: absolute; inset: 0;
-    background: rgba(26,26,46,0.6);
-    display: flex; align-items: center; justify-content: center;
-    font-size: 14px; color: #FFE066; font-weight: 600;
-    border-radius: 6px;
-  }
 </style>
 </head>
 <body>
@@ -220,6 +253,15 @@
   <div class="title">🧩 快乐拼豆</div>
   <div class="info" id="stepInfo">步数: 0</div>
 </header>
+
+<!-- 目标预览条 -->
+<div class="target-bar">
+  <div class="target-bar-header">
+    <span>🎯 目标布局（每格最终颜色）</span>
+    <button class="btn-hint active" id="hintBtn" onclick="toggleHint()">显示</button>
+  </div>
+  <div class="target-row" id="targetRow"></div>
+</div>
 
 <div class="level-selector" id="levelTabs"></div>
 <p class="hint-text">点击同色连通区域 → 收入缓冲区 → 归位锁定</p>
@@ -254,6 +296,8 @@
 
 <script>
 // ============ 关卡数据 ============
+// board: 初始打乱布局（全部非锁定）
+// target: 每格最终颜色（锁定目标）
 const LEVELS = [
   {
     id: 1, name: "第1关 5×5",
@@ -265,6 +309,7 @@ const LEVELS = [
       ["G","G","Y","B","Y"],
       ["G","R","R","B","Y"]
     ],
+    // 每格的目标颜色（锁定时变成这个颜色）
     target: [
       ["R","R","R","R","R"],
       ["R","R","R","R","R"],
@@ -314,18 +359,21 @@ const LEVELS = [
 ];
 
 const COLORS = { R:'#FF4B4B', G:'#4BCB4B', B:'#4B7BFF', Y:'#FFDD4B', P:'#D54BFF' };
+const EMOJI = { R:'🔴', G:'🟢', B:'🔵', Y:'🟡', P:'🟣' };
 
 // ============ 游戏状态 ============
 let state = {
   size: 5,
   bufferCap: 5,
   board: [],       // [r][c] = { color, locked, inBuffer }
+  target: [],      // [r][c] = color string
   buffer: [],      // [{ color, count }]
-  history: [],     // for undo
+  history: [],
   steps: 0,
   currentLevel: 0,
   highlighted: [],
-  won: false
+  won: false,
+  showHint: true   // 默认显示目标
 };
 
 // ============ BFS 连通域 ============
@@ -357,24 +405,23 @@ function loadLevel(idx) {
     size: lvl.size,
     bufferCap: lvl.bufferCapacity,
     board: [],
+    target: [],
     buffer: [],
     history: [],
     steps: 0,
     currentLevel: idx,
     highlighted: [],
-    won: false
+    won: false,
+    showHint: state.showHint
   };
   for (let r=0; r<lvl.size; r++) {
     state.board[r] = [];
+    state.target[r] = [];
     for (let c=0; c<lvl.size; c++) {
-      state.board[r][c] = {
-        color: lvl.board[r][c],
-        locked: false,
-        inBuffer: false
-      };
+      state.board[r][c] = { color: lvl.board[r][c], locked: false, inBuffer: false };
+      state.target[r][c] = lvl.target[r][c];
     }
   }
-  // buffer slots: map of color -> count
   state.buffer = [];
   for (let i=0; i<lvl.bufferCapacity; i++) state.buffer.push(null);
 
@@ -385,8 +432,7 @@ function loadLevel(idx) {
 function restartLevel() { loadLevel(state.currentLevel); }
 function nextLevel() {
   closeWin();
-  const next = (state.currentLevel + 1) % LEVELS.length;
-  loadLevel(next);
+  loadLevel((state.currentLevel + 1) % LEVELS.length);
 }
 function closeWin() {
   document.getElementById('win-overlay').classList.remove('show');
@@ -406,11 +452,38 @@ function buildLevelTabs() {
 
 // ============ 渲染 ============
 function renderAll() {
+  renderTargetBar();
   renderBoard();
   renderBuffer();
   document.getElementById('stepInfo').textContent = `步数: ${state.steps}`;
   document.getElementById('bufCount').textContent = `${bufferUsed()}/${state.bufferCap}`;
   document.getElementById('undoBtn').disabled = state.history.length === 0;
+}
+
+function renderTargetBar() {
+  const el = document.getElementById('targetRow');
+  const btn = document.getElementById('hintBtn');
+  btn.textContent = state.showHint ? '隐藏' : '显示';
+  btn.classList.toggle('active', state.showHint);
+  el.innerHTML = '';
+  for (let r=0; r<state.size; r++) {
+    for (let c=0; c<state.size; c++) {
+      const tc = document.createElement('div');
+      tc.className = 'target-cell';
+      const tgtColor = state.target[r][c];
+      tc.style.background = COLORS[tgtColor];
+      tc.style.color = '#fff';
+      tc.textContent = EMOJI[tgtColor];
+      tc.title = `行${r+1}列${c+1} → ${tgtColor}`;
+      if (!state.showHint) tc.classList.add('dim');
+      el.appendChild(tc);
+    }
+  }
+}
+
+function toggleHint() {
+  state.showHint = !state.showHint;
+  renderTargetBar();
 }
 
 function renderBoard() {
@@ -423,30 +496,30 @@ function renderBoard() {
       cell.className = 'cell';
       cell.dataset.r = r; cell.dataset.c = c;
       const info = state.board[r][c];
+      const dot = document.createElement('div');
+      dot.className = 'dot';
+      dot.style.background = COLORS[info.color];
 
       if (info.locked) {
         cell.classList.add('locked');
-        const dot = document.createElement('div');
-        dot.className = 'dot';
-        dot.style.background = COLORS[info.color];
         cell.appendChild(dot);
       } else if (info.inBuffer) {
         cell.classList.add('in-buffer');
-        const dot = document.createElement('div');
-        dot.className = 'dot';
-        dot.style.background = COLORS[info.color];
         cell.appendChild(dot);
       } else {
-        const dot = document.createElement('div');
-        dot.className = 'dot';
-        dot.style.background = COLORS[info.color];
+        // 未锁定且不在缓冲区：可点击
         cell.appendChild(dot);
         cell.addEventListener('click', () => onBoardClick(r, c));
         cell.addEventListener('touchstart', (e) => { e.preventDefault(); onBoardClick(r, c); }, { passive: false });
+        // 目标提示：显示匹配高亮
+        if (state.showHint && info.color === state.target[r][c]) {
+          cell.classList.add('hint-match');
+        }
       }
 
-      // highlight
-      if (state.highlighted.some(([hr,hc])=>hr===r&&hc===c)) cell.classList.add('highlighted');
+      if (state.highlighted.some(([hr,hc])=>hr===r&&hc===c)) {
+        cell.classList.add('highlighted');
+      }
 
       board.appendChild(cell);
     }
@@ -468,10 +541,12 @@ function renderBuffer() {
       count.className = 'count';
       count.textContent = '×'+slot.count;
       div.appendChild(dot); div.appendChild(count);
+      div.title = `点击归位 ${slot.color} 色 ×${slot.count}`;
       div.addEventListener('click', () => onBufferClick(i));
       div.addEventListener('touchstart', (e)=>{ e.preventDefault(); onBufferClick(i); }, {passive:false});
     } else {
       div.classList.add('empty');
+      div.title = '空槽位';
     }
     el.appendChild(div);
   });
@@ -488,29 +563,42 @@ function onBoardClick(r, c) {
   const info = state.board[r][c];
   if (info.locked || info.inBuffer) return;
 
-  // If already highlighted, clicking same area clears it
-  const domain = bfs(r, c);
-  const isAlreadyHighlighted = state.highlighted.length > 0 &&
-    state.highlighted.every(([hr,hc])=> domain.some(([dr,dc])=>dr===hr&&hc===hc));
-
   if (state.highlighted.length > 0) {
-    // second click: try to absorb
-    if (domain.length <= bufferFree()) {
-      absorbDomain(domain);
+    // 已有高亮：再次点击则尝试吸附
+    const domain = bfs(r, c);
+    const sameDomain = domain.length === state.highlighted.length &&
+      domain.every(([dr,dc]) => state.highlighted.some(([hr,hc])=>hr===dr&&hc===dc));
+
+    if (sameDomain) {
+      // 点击同一区域 → 吸附
+      if (domain.length <= bufferFree()) {
+        absorbDomain(domain);
+      } else {
+        failDrop(domain);
+      }
     } else {
-      failDrop(domain);
+      // 点击不同区域 → 先检查新区域
+      if (domain.length <= bufferFree()) {
+        state.highlighted = domain;
+        renderBoard();
+        absorbDomain(domain);
+      } else {
+        failDrop(domain);
+        state.highlighted = [];
+        renderBoard();
+      }
     }
     state.highlighted = [];
     renderBoard();
   } else {
-    // first click: highlight
+    // 无高亮：点击后高亮
+    const domain = bfs(r, c);
     state.highlighted = domain;
     renderBoard();
   }
 }
 
 function absorbDomain(domain) {
-  // save history
   const hist = {
     board: JSON.parse(JSON.stringify(state.board.map(row=>row.map(c=>({...c}))))),
     buffer: state.buffer.map(s=>s?{...s}:null),
@@ -520,12 +608,10 @@ function absorbDomain(domain) {
 
   const color = state.board[domain[0][0]][domain[0][1]].color;
 
-  // mark board cells in buffer
   domain.forEach(([r,c]) => {
     state.board[r][c].inBuffer = true;
   });
 
-  // add to buffer
   const existSlot = state.buffer.findIndex(s=>s&&s.color===color);
   if (existSlot >= 0) {
     state.buffer[existSlot].count += domain.length;
@@ -536,11 +622,9 @@ function absorbDomain(domain) {
 
   state.steps++;
   renderAll();
-  tryAutoReturn();
 }
 
 function failDrop(domain) {
-  // animate cells red
   domain.forEach(([r,c]) => {
     const idx = r*state.size + c;
     const cells = document.querySelectorAll('.cell');
@@ -549,7 +633,7 @@ function failDrop(domain) {
       setTimeout(()=>cells[idx].classList.remove('no-drop'), 400);
     }
   });
-  showToast('缓冲区空间不足！');
+  showToast('缓冲区空间不足！整组禁止放入');
 }
 
 function onBufferClick(slotIdx) {
@@ -558,80 +642,50 @@ function onBufferClick(slotIdx) {
   if (!slot) return;
 
   const color = slot.color;
-  // find target cells: not locked, not in buffer, matches color
+  // 找到所有未锁定、未在缓冲区、且目标颜色 = 该颜色的格子
   const targets = [];
   for (let r=0; r<state.size; r++)
     for (let c=0; c<state.size; c++) {
       const info = state.board[r][c];
-      if (!info.locked && !info.inBuffer && info.color === color) {
-        // check if this is a target (belongs to a locked or specific target region)
-        // In our model, we simply allow return to any non-locked, non-inbuffer cell of same color
-        // that hasn't been locked
+      if (!info.locked && !info.inBuffer && state.target[r][c] === color) {
         targets.push([r,c]);
       }
     }
 
   if (targets.length === 0) {
-    // no valid return spot for this color
     const el = document.querySelectorAll('.buf-slot')[slotIdx];
     el.classList.add('cannot-return');
     setTimeout(()=>el.classList.remove('cannot-return'), 500);
-    showToast('没有可归位的位置');
+    showToast(`没有 ${color} 色的目标位置！`);
     return;
   }
 
-  // Save history before any change
+  // 保存历史
   state.history.push({
     board: JSON.parse(JSON.stringify(state.board.map(row=>row.map(c=>({...c}))))),
     buffer: state.buffer.map(s=>s?{...s}:null),
     steps: state.steps
   });
 
-  // Return as many as possible (all count)
-  const count = slot.count;
-  for (let i=0; i<count && targets.length>0; i++) {
-    const [tr,tc] = targets.shift();
+  // 尽可能归位（上限：目标格子数 和 buffer中的数量）
+  const count = Math.min(slot.count, targets.length);
+  for (let i=0; i<count; i++) {
+    const [tr,tc] = targets[i];
     state.board[tr][tc].inBuffer = false;
     state.board[tr][tc].locked = true;
   }
 
-  // Update buffer slot
-  state.buffer[slotIdx] = null;
+  // 更新缓冲区
+  const remaining = slot.count - count;
+  if (remaining > 0) {
+    state.buffer[slotIdx] = { color, count: remaining };
+  } else {
+    state.buffer[slotIdx] = null;
+  }
 
   state.steps++;
   renderAll();
   checkWin();
-}
-
-function tryAutoReturn() {
-  // auto-return: if buffer has all same color and all target cells exist, auto-lock them
-  const nonNull = state.buffer.filter(s=>s!==null);
-  if (nonNull.length !== 1) return; // only auto when one color in buffer
-
-  const slot = nonNull[0];
-  const color = slot.color;
-  const count = slot.count;
-
-  // Find all non-locked, non-inbuffer cells of this color
-  const targets = [];
-  for (let r=0; r<state.size; r++)
-    for (let c=0; c<state.size; c++) {
-      const info = state.board[r][c];
-      if (!info.locked && !info.inBuffer && info.color === color) targets.push([r,c]);
-    }
-
-  if (count <= targets.length) {
-    // auto-return all
-    const slotIdx = state.buffer.findIndex(s=>s&&s.color===color);
-    for (let i=0; i<count; i++) {
-      const [tr,tc] = targets[i];
-      state.board[tr][tc].inBuffer = false;
-      state.board[tr][tc].locked = true;
-    }
-    state.buffer[slotIdx] = null;
-    renderAll();
-    checkWin();
-  }
 }
 
 function checkWin() {
@@ -660,7 +714,7 @@ function showToast(msg) {
   const t = document.getElementById('toast');
   t.textContent = msg;
   t.classList.add('show');
-  setTimeout(()=>t.classList.remove('show'), 1500);
+  setTimeout(()=>t.classList.remove('show'), 1800);
 }
 
 // ============ 启动 ============
