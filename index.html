@@ -7,29 +7,16 @@
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
   :root {
-    --R: #FF4B4B;
-    --G: #4BCB4B;
-    --B: #4B7BFF;
-    --Y: #FFDD4B;
-    --P: #D54BFF;
-    --lock-glow: rgba(255,255,255,0.9);
-    --bg: #1a1a2e;
-    --panel: #16213e;
-    --panel2: #0f3460;
-    --text: #e8e8e8;
-    --accent: #e94560;
-    --muted: #8899aa;
+    --R: #FF4B4B; --G: #4BCB4B; --B: #4B7BFF; --Y: #FFDD4B; --P: #D54BFF;
+    --bg: #1a1a2e; --panel: #16213e; --panel2: #0f3460;
+    --text: #e8e8e8; --accent: #e94560; --muted: #8899aa;
   }
   body {
-    background: var(--bg);
-    color: var(--text);
+    background: var(--bg); color: var(--text);
     font-family: -apple-system, system-ui, sans-serif;
     min-height: 100dvh;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    overflow-x: hidden;
-    padding: 0 0 120px;
+    display: flex; flex-direction: column; align-items: center;
+    overflow-x: hidden; padding: 0 0 120px;
   }
   header {
     width: 100%; max-width: 480px;
@@ -39,229 +26,183 @@
   header .title { font-size: 18px; font-weight: 700; color: var(--accent); }
   header .info { font-size: 13px; color: var(--muted); }
 
-  /* 目标预览 */
+  /* 目标预览条 */
   .target-bar {
-    margin: 4px 16px 0;
-    padding: 8px 12px;
-    background: var(--panel);
-    border-radius: 10px;
+    margin: 4px 16px 0; padding: 8px 12px;
+    background: var(--panel); border-radius: 10px;
     width: calc(100% - 32px); max-width: 440px;
   }
   .target-bar-header {
-    display: flex; justify-content: space-between; align-items: center;
-    margin-bottom: 8px;
+    display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;
   }
   .target-bar-header span { font-size: 12px; color: var(--muted); }
   .btn-hint {
     font-size: 12px; padding: 4px 10px;
     border: 1px solid rgba(255,255,255,0.2); border-radius: 8px;
-    background: transparent; color: var(--muted); cursor: pointer;
-    transition: all 0.15s;
+    background: transparent; color: var(--muted); cursor: pointer; transition: all 0.15s;
   }
   .btn-hint:hover, .btn-hint.active { background: var(--accent); color: #fff; border-color: var(--accent); }
-  .target-row {
-    display: flex; gap: 4px; flex-wrap: wrap;
-  }
+  .target-row { display: flex; gap: 4px; flex-wrap: wrap; }
   .target-cell {
     width: 36px; height: 36px; border-radius: 6px;
     display: flex; align-items: center; justify-content: center;
     font-size: 18px; font-weight: 700;
-    border: 2px solid rgba(255,255,255,0.1);
-    transition: opacity 0.2s;
+    border: 2px solid rgba(255,255,255,0.1); transition: opacity 0.2s;
   }
-  .target-cell.dim { opacity: 0.2; }
+  .target-cell.dim { opacity: 0.15; }
 
   .board-wrap {
-    padding: 8px;
-    background: var(--panel);
-    border-radius: 16px;
-    margin: 10px 16px;
-    box-shadow: 0 4px 24px rgba(0,0,0,0.4);
-    width: calc(100% - 32px);
-    max-width: 440px;
+    padding: 10px; background: var(--panel); border-radius: 16px;
+    margin: 10px 16px; box-shadow: 0 4px 24px rgba(0,0,0,0.4);
+    width: calc(100% - 32px); max-width: 440px;
   }
-  #board {
-    display: grid;
-    gap: 3px;
-    width: 100%;
-    aspect-ratio: 1;
-  }
+  #board { display: grid; gap: 4px; width: 100%; aspect-ratio: 1; }
+
+  /* 棋盘格子 */
   .cell {
-    border-radius: 6px;
-    position: relative;
+    border-radius: 8px; position: relative;
     display: flex; align-items: center; justify-content: center;
-    cursor: pointer;
-    transition: transform 0.12s, box-shadow 0.12s, opacity 0.2s;
-    transform: translateZ(0);
-    overflow: visible;
+    cursor: pointer; overflow: visible;
+    transition: transform 0.1s;
   }
-  .cell {
-    border-radius: 6px;
-    position: relative;
-    display: flex; align-items: center; justify-content: center;
-    cursor: pointer;
-    transition: transform 0.12s, box-shadow 0.12s, opacity 0.2s;
-    transform: translateZ(0);
-    overflow: visible;
+  .cell:active { transform: scale(0.95); }
+
+  /* 底色 = 目标颜色，薄薄一层 */
+  .floor {
+    position: absolute; inset: 0; border-radius: 8px;
+    opacity: 0.22; transition: opacity 0.2s; z-index: 0;
   }
-  /* 格子底色 = 目标颜色 */
-  .cell .floor {
-    position: absolute; inset: 0;
-    border-radius: 6px;
-    opacity: 0.35;
-    transition: opacity 0.2s;
-  }
-  .cell .dot {
-    width: 78%; height: 78%;
-    border-radius: 50%;
-    transition: all 0.15s;
-    box-shadow: inset -2px -2px 6px rgba(0,0,0,0.3), inset 2px 2px 6px rgba(255,255,255,0.15);
+
+  /* 棋子圆点 */
+  .dot {
+    width: 72%; height: 72%; border-radius: 50%;
     position: relative; z-index: 1;
+    border: 2px solid rgba(255,255,255,0.5);
+    box-shadow: inset -2px -2px 5px rgba(0,0,0,0.35), inset 1px 1px 3px rgba(255,255,255,0.2);
+    transition: transform 0.15s, opacity 0.2s;
   }
+
+  /* 高亮连通域 */
+  .cell.highlighted .dot {
+    transform: scale(1.1);
+    box-shadow: 0 0 0 3px #FFE066, 0 0 14px #FFE066aa,
+                inset -2px -2px 5px rgba(0,0,0,0.35), inset 1px 1px 3px rgba(255,255,255,0.2);
+    animation: pulse-highlight 0.6s ease infinite alternate;
+  }
+  @keyframes pulse-highlight {
+    from { box-shadow: 0 0 0 3px #FFE066, 0 0 10px #FFE06688, inset -2px -2px 5px rgba(0,0,0,0.35); }
+    to   { box-shadow: 0 0 0 4px #FFE066, 0 0 18px #FFE066cc, inset -2px -2px 5px rgba(0,0,0,0.35); }
+  }
+
+  /* 已在正确位置（棋子=底色） */
+  .cell.correct .dot {
+    box-shadow: 0 0 0 2px #fff, 0 0 8px rgba(255,255,255,0.5),
+                inset -2px -2px 5px rgba(0,0,0,0.3);
+  }
+  .cell.correct .floor { opacity: 0.38; }
+
+  /* 锁定格 */
+  .cell.locked { cursor: default; }
+  .cell.locked .floor { opacity: 0.15; }
   .cell.locked .dot {
-    box-shadow: 0 0 8px var(--lock-glow), 0 0 2px #fff, inset -2px -2px 6px rgba(0,0,0,0.3);
+    border-color: rgba(255,255,255,0.8);
+    box-shadow: 0 0 10px rgba(255,255,255,0.9), 0 0 3px #fff,
+                inset -2px -2px 5px rgba(0,0,0,0.3), inset 1px 1px 3px rgba(255,255,255,0.3);
+    animation: locked-glow 1.5s ease infinite alternate;
+  }
+  @keyframes locked-glow {
+    from { box-shadow: 0 0 8px rgba(255,255,255,0.7), 0 0 2px #fff, inset -2px -2px 5px rgba(0,0,0,0.3); }
+    to   { box-shadow: 0 0 14px rgba(255,255,255,1), 0 0 4px #fff, inset -2px -2px 5px rgba(0,0,0,0.3); }
   }
   .cell.locked::after {
-    content: '🔒';
-    position: absolute;
-    font-size: calc(min(4vw, 12px));
-    top: 0px; right: 1px;
-    z-index: 2;
+    content: '🔒'; position: absolute; font-size: calc(min(3.5vw, 10px));
+    top: 1px; right: 2px; z-index: 3;
     filter: drop-shadow(0 0 2px #fff);
   }
-  .cell.highlighted .dot {
-    box-shadow: 0 0 0 3px #FFE066, 0 0 12px #FFE06688, inset -2px -2px 6px rgba(0,0,0,0.3);
-    transform: scale(1.08);
-  }
-  .cell.in-buffer {
-    background: rgba(255,255,255,0.06);
-    border: 2px dashed rgba(255,255,255,0.25);
-    border-radius: 6px;
-  }
-  .cell.in-buffer .dot { opacity: 0.2; }
-  .cell.no-drop .dot { animation: shake 0.3s; }
-  @keyframes shake {
-    0%,100%{transform:translateX(0)} 20%{transform:translateX(-4px)} 60%{transform:translateX(4px)}
-  }
-  .cell.popping .dot { animation: pop 0.25s ease; }
-  @keyframes pop {
-    0%{transform:scale(0);opacity:0} 70%{transform:scale(1.2)} 100%{transform:scale(1);opacity:1}
-  }
-  /* 目标提示高亮 */
-  .cell.hint-match .dot {
-    box-shadow: 0 0 0 2px #fff4, 0 0 8px #fff4;
+
+  /* 已被取走（棋子在缓冲区） */
+  .cell.in-buffer { cursor: default; }
+  .cell.in-buffer .floor { opacity: 0.12; }
+  .cell.in-buffer .dot { opacity: 0.18; border-style: dashed; border-color: rgba(255,255,255,0.3); }
+  .cell.in-buffer::before {
+    content: ''; position: absolute; inset: 4px;
+    border: 2px dashed rgba(255,255,255,0.2); border-radius: 50%; z-index: 2;
   }
 
+  /* 吸附失败抖动 */
+  @keyframes shake { 0%,100%{transform:translateX(0)} 20%{transform:translateX(-5px)} 60%{transform:translateX(5px)} }
+  .cell.no-drop { animation: shake 0.3s; }
+  .cell.no-drop .dot { border-color: #ff4444 !important; box-shadow: 0 0 0 3px #ff4444 !important; }
+
+  /* 吸附成功飞入动画 */
+  @keyframes absorb { 0%{transform:scale(1)} 40%{transform:scale(1.3)} 100%{transform:scale(0);opacity:0} }
+  .cell.absorbing .dot { animation: absorb 0.3s ease forwards; }
+
+  /* 归位弹出动画 */
+  @keyframes lock-bounce { 0%{transform:scale(0)} 60%{transform:scale(1.2)} 80%{transform:scale(0.95)} 100%{transform:scale(1)} }
+  .cell.lock-bounce .dot { animation: lock-bounce 0.35s ease; }
+
+  /* 缓冲区 */
   .buffer-wrap {
-    margin: 10px 16px;
-    padding: 12px 16px;
-    background: var(--panel);
-    border-radius: 12px;
-    width: calc(100% - 32px);
-    max-width: 440px;
+    margin: 10px 16px; padding: 12px 16px;
+    background: var(--panel); border-radius: 12px;
+    width: calc(100% - 32px); max-width: 440px;
   }
-  .buffer-label {
-    font-size: 12px; color: var(--muted);
-    margin-bottom: 8px;
-    display: flex; justify-content: space-between;
-  }
-  #buffer {
-    display: flex; gap: 6px;
-    flex-wrap: wrap;
-  }
+  .buffer-label { font-size: 12px; color: var(--muted); margin-bottom: 8px; display: flex; justify-content: space-between; }
+  #buffer { display: flex; gap: 8px; flex-wrap: wrap; }
   .buf-slot {
-    min-width: 52px; height: 52px;
-    border-radius: 10px;
-    border: 2px solid rgba(255,255,255,0.1);
-    display: flex; flex-direction: column;
-    align-items: center; justify-content: center;
-    cursor: pointer;
+    min-width: 56px; height: 56px; border-radius: 10px;
+    border: 2px solid rgba(255,255,255,0.12); display: flex; flex-direction: column;
+    align-items: center; justify-content: center; cursor: pointer; position: relative;
+    background: rgba(255,255,255,0.04); padding: 4px 6px; gap: 2px;
     transition: all 0.15s;
-    position: relative;
-    background: rgba(255,255,255,0.04);
-    padding: 4px 6px;
-    gap: 2px;
   }
   .buf-slot.empty { border-style: dashed; opacity: 0.3; cursor: default; }
-  .buf-slot.full:hover { transform: scale(1.06); box-shadow: 0 4px 12px rgba(0,0,0,0.4); }
+  .buf-slot.full:hover { transform: scale(1.07); box-shadow: 0 4px 14px rgba(0,0,0,0.5); }
+  .buf-slot.full:active { transform: scale(0.97); }
   .buf-slot .dot {
-    width: 32px; height: 32px; border-radius: 50%;
-    box-shadow: inset -2px -2px 6px rgba(0,0,0,0.3), inset 2px 2px 6px rgba(255,255,255,0.15);
+    width: 34px; height: 34px; border-radius: 50%; border: 2px solid rgba(255,255,255,0.5);
+    box-shadow: inset -2px -2px 5px rgba(0,0,0,0.35), inset 1px 1px 3px rgba(255,255,255,0.2);
     flex-shrink: 0;
   }
-  .buf-slot .count {
-    font-size: 11px; font-weight: 700;
-    color: rgba(255,255,255,0.8);
-    line-height: 1;
-  }
-  .buf-slot.cannot-return { animation: pulse-red 0.5s; }
-  @keyframes pulse-red { 0%,100%{border-color:rgba(255,255,255,0.1)} 50%{border-color:var(--accent)} }
+  .buf-slot .count { font-size: 12px; font-weight: 700; color: rgba(255,255,255,0.85); line-height: 1; }
+  @keyframes pulse-red { 0%,100%{border-color:rgba(255,255,255,0.12)} 50%{border-color:#ff4444} }
+  .buf-slot.cannot { animation: pulse-red 0.4s; }
 
-  .controls {
-    margin: 14px 16px;
-    display: flex; gap: 10px;
-    width: calc(100% - 32px);
-    max-width: 440px;
-  }
-  .btn {
-    flex: 1; padding: 12px;
-    border: none; border-radius: 10px;
-    font-size: 15px; font-weight: 600;
-    cursor: pointer; color: #fff;
-    transition: all 0.15s;
-  }
+  /* 底部按钮 */
+  .controls { margin: 14px 16px; display: flex; gap: 10px; width: calc(100% - 32px); max-width: 440px; }
+  .btn { flex: 1; padding: 12px; border: none; border-radius: 10px; font-size: 15px; font-weight: 600; cursor: pointer; color: #fff; transition: all 0.15s; }
   .btn:active { transform: scale(0.97); }
   .btn-home { background: var(--panel2); }
   .btn-undo { background: var(--accent); }
   .btn-undo:disabled { opacity: 0.4; cursor: default; }
   .btn-restart { background: #4B7BFF; }
 
+  /* 提示文字 */
+  .hint-text { font-size: 12px; color: var(--muted); text-align: center; margin: 6px 0 10px; }
+
+  /* Toast */
   .toast {
     position: fixed; top: 80px; left: 50%; transform: translateX(-50%);
-    background: rgba(0,0,0,0.85); color: #fff;
-    padding: 10px 24px; border-radius: 24px;
-    font-size: 14px; font-weight: 600;
-    pointer-events: none; z-index: 999;
-    transition: opacity 0.3s;
-    opacity: 0;
+    background: rgba(0,0,0,0.85); color: #fff; padding: 10px 24px; border-radius: 24px;
+    font-size: 14px; font-weight: 600; pointer-events: none; z-index: 999;
+    transition: opacity 0.3s; opacity: 0;
   }
   .toast.show { opacity: 1; }
 
-  #win-overlay {
-    display: none; position: fixed; inset: 0;
-    background: rgba(0,0,0,0.7);
-    align-items: center; justify-content: center;
-    flex-direction: column; z-index: 1000;
-  }
+  /* 通关弹窗 */
+  #win-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.7); align-items: center; justify-content: center; flex-direction: column; z-index: 1000; }
   #win-overlay.show { display: flex; }
-  #win-overlay .win-card {
-    background: var(--panel); border-radius: 20px;
-    padding: 40px 36px; text-align: center;
-    box-shadow: 0 8px 40px rgba(0,0,0,0.5);
-    animation: win-pop 0.4s ease;
-  }
-  @keyframes win-pop {
-    0%{transform:scale(0.5);opacity:0} 70%{transform:scale(1.05)} 100%{transform:scale(1);opacity:1}
-  }
+  .win-card { background: var(--panel); border-radius: 20px; padding: 40px 36px; text-align: center; animation: win-pop 0.4s ease; }
+  @keyframes win-pop { 0%{transform:scale(0.5);opacity:0} 70%{transform:scale(1.05)} 100%{transform:scale(1);opacity:1} }
   #win-overlay h2 { font-size: 28px; color: #FFE066; margin-bottom: 8px; }
   #win-overlay p { color: var(--muted); font-size: 15px; margin-bottom: 24px; }
   #win-overlay .btn { width: 100%; background: var(--accent); margin-top: 8px; }
 
-  .level-selector {
-    display: flex; gap: 8px; margin: 4px 16px 0;
-    width: calc(100% - 32px); max-width: 440px;
-    overflow-x: auto; padding-bottom: 4px;
-  }
-  .level-tab {
-    padding: 6px 14px; border-radius: 8px;
-    border: 1px solid rgba(255,255,255,0.15);
-    background: var(--panel); color: var(--muted);
-    font-size: 13px; cursor: pointer; white-space: nowrap;
-    transition: all 0.15s;
-  }
+  /* 关卡选择 */
+  .level-selector { display: flex; gap: 8px; margin: 4px 16px 0; width: calc(100% - 32px); max-width: 440px; overflow-x: auto; padding-bottom: 4px; }
+  .level-tab { padding: 6px 14px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.15); background: var(--panel); color: var(--muted); font-size: 13px; cursor: pointer; white-space: nowrap; transition: all 0.15s; }
   .level-tab.active { background: var(--accent); color: #fff; border-color: var(--accent); }
-
-  .hint-text { font-size: 12px; color: var(--muted); text-align: center; margin: 6px 0 10px; }
 </style>
 </head>
 <body>
@@ -271,17 +212,16 @@
   <div class="info" id="stepInfo">步数: 0</div>
 </header>
 
-<!-- 目标预览条 -->
 <div class="target-bar">
   <div class="target-bar-header">
-    <span>🎯 目标布局（每格最终颜色）</span>
-    <button class="btn-hint active" id="hintBtn" onclick="toggleHint()">显示</button>
+    <span>🎯 目标布局</span>
+    <button class="btn-hint active" id="hintBtn" onclick="toggleHint()">隐藏</button>
   </div>
   <div class="target-row" id="targetRow"></div>
 </div>
 
 <div class="level-selector" id="levelTabs"></div>
-<p class="hint-text">点击同色连通区域 → 收入缓冲区 → 归位锁定</p>
+<p class="hint-text">点击同色连通区域 → 再次点击吸附到暂存区 → 点暂存区归位</p>
 
 <div class="board-wrap">
   <div id="board"></div>
@@ -289,7 +229,7 @@
 
 <div class="buffer-wrap">
   <div class="buffer-label">
-    <span>🗃 缓冲区</span>
+    <span>🗃 暂存区</span>
     <span id="bufCount">0/5</span>
   </div>
   <div id="buffer"></div>
@@ -313,8 +253,6 @@
 
 <script>
 // ============ 关卡数据 ============
-// board: 初始打乱布局（全部非锁定）
-// target: 每格最终颜色（锁定目标）
 const LEVELS = [
   {
     id: 1, name: "第1关 5×5",
@@ -326,7 +264,6 @@ const LEVELS = [
       ["G","G","Y","B","Y"],
       ["G","R","R","B","Y"]
     ],
-    // 每格的目标颜色（锁定时变成这个颜色）
     target: [
       ["R","R","R","R","R"],
       ["R","R","R","R","R"],
@@ -376,21 +313,15 @@ const LEVELS = [
 ];
 
 const COLORS = { R:'#FF4B4B', G:'#4BCB4B', B:'#4B7BFF', Y:'#FFDD4B', P:'#D54BFF' };
-const EMOJI = { R:'🔴', G:'🟢', B:'🔵', Y:'🟡', P:'🟣' };
+const EMOJI  = { R:'🔴', G:'🟢', B:'🔵', Y:'🟡', P:'🟣' };
 
 // ============ 游戏状态 ============
 let state = {
-  size: 5,
-  bufferCap: 5,
-  board: [],       // [r][c] = { color, locked, inBuffer }
-  target: [],      // [r][c] = color string
-  buffer: [],      // [{ color, count }]
-  history: [],
-  steps: 0,
-  currentLevel: 0,
-  highlighted: [],
-  won: false,
-  showHint: true   // 默认显示目标
+  size: 5, bufferCap: 5,
+  board: [], target: [], buffer: [],
+  history: [], steps: 0,
+  currentLevel: 0, highlighted: [], won: false,
+  showHint: true
 };
 
 // ============ BFS 连通域 ============
@@ -402,8 +333,9 @@ function bfs(startR, startC) {
   visited.add(`${startR},${startC}`);
   while (queue.length) {
     const [r, c] = queue.shift();
-    if (state.board[r][c].locked || state.board[r][c].inBuffer) continue;
-    if (state.board[r][c].color !== color) continue;
+    const cell = state.board[r][c];
+    if (cell.locked || cell.inBuffer) continue;
+    if (cell.color !== color) continue;
     result.push([r, c]);
     for (const [dr, dc] of [[-1,0],[1,0],[0,-1],[0,1]]) {
       const nr = r+dr, nc = c+dc;
@@ -415,33 +347,24 @@ function bfs(startR, startC) {
   return result;
 }
 
-// ============ 初始化关卡 ============
+// ============ 初始化 ============
 function loadLevel(idx) {
   const lvl = LEVELS[idx];
   state = {
-    size: lvl.size,
-    bufferCap: lvl.bufferCapacity,
-    board: [],
-    target: [],
-    buffer: [],
-    history: [],
-    steps: 0,
-    currentLevel: idx,
-    highlighted: [],
-    won: false,
+    size: lvl.size, bufferCap: lvl.bufferCapacity,
+    board: [], target: [], buffer: [],
+    history: [], steps: 0,
+    currentLevel: idx, highlighted: [], won: false,
     showHint: state.showHint
   };
   for (let r=0; r<lvl.size; r++) {
-    state.board[r] = [];
-    state.target[r] = [];
+    state.board[r] = []; state.target[r] = [];
     for (let c=0; c<lvl.size; c++) {
       state.board[r][c] = { color: lvl.board[r][c], locked: false, inBuffer: false };
       state.target[r][c] = lvl.target[r][c];
     }
   }
-  state.buffer = [];
-  for (let i=0; i<lvl.bufferCapacity; i++) state.buffer.push(null);
-
+  state.buffer = Array.from({ length: lvl.bufferCapacity }, () => null);
   renderAll();
   buildLevelTabs();
 }
@@ -483,19 +406,15 @@ function renderTargetBar() {
   btn.textContent = state.showHint ? '隐藏' : '显示';
   btn.classList.toggle('active', state.showHint);
   el.innerHTML = '';
-  for (let r=0; r<state.size; r++) {
+  for (let r=0; r<state.size; r++)
     for (let c=0; c<state.size; c++) {
       const tc = document.createElement('div');
-      tc.className = 'target-cell';
-      const tgtColor = state.target[r][c];
-      tc.style.background = COLORS[tgtColor];
-      tc.style.color = '#fff';
-      tc.textContent = EMOJI[tgtColor];
-      tc.title = `行${r+1}列${c+1} → ${tgtColor}`;
-      if (!state.showHint) tc.classList.add('dim');
+      tc.className = 'target-cell' + (state.showHint ? '' : ' dim');
+      const tgt = state.target[r][c];
+      tc.style.background = COLORS[tgt];
+      tc.textContent = EMOJI[tgt];
       el.appendChild(tc);
     }
-  }
 }
 
 function toggleHint() {
@@ -507,37 +426,36 @@ function renderBoard() {
   const board = document.getElementById('board');
   board.style.gridTemplateColumns = `repeat(${state.size}, 1fr)`;
   board.innerHTML = '';
+
   for (let r=0; r<state.size; r++) {
     for (let c=0; c<state.size; c++) {
+      const info = state.board[r][c];
       const cell = document.createElement('div');
       cell.className = 'cell';
       cell.dataset.r = r; cell.dataset.c = c;
-      const info = state.board[r][c];
+
+      // 底色
       const floor = document.createElement('div');
       floor.className = 'floor';
       floor.style.background = COLORS[state.target[r][c]];
+
+      // 棋子
       const dot = document.createElement('div');
       dot.className = 'dot';
       dot.style.background = COLORS[info.color];
 
       if (info.locked) {
         cell.classList.add('locked');
-        cell.appendChild(floor);
-        cell.appendChild(dot);
+        cell.appendChild(floor); cell.appendChild(dot);
       } else if (info.inBuffer) {
         cell.classList.add('in-buffer');
-        cell.appendChild(floor);
-        cell.appendChild(dot);
+        cell.appendChild(floor); cell.appendChild(dot);
       } else {
-        cell.appendChild(floor);
-        cell.appendChild(dot);
+        // 可操作格
+        if (info.color === state.target[r][c]) cell.classList.add('correct');
+        cell.appendChild(floor); cell.appendChild(dot);
         cell.addEventListener('click', () => onBoardClick(r, c));
-        cell.addEventListener('touchstart', (e) => { e.preventDefault(); onBoardClick(r, c); }, { passive: false });
-        // 棋子颜色 = 目标颜色 → 已正确，轻微提示
-        if (info.color === state.target[r][c]) {
-          dot.style.boxShadow = '0 0 6px rgba(255,255,255,0.6), inset -2px -2px 6px rgba(0,0,0,0.3)';
-          floor.style.opacity = '0.5';
-        }
+        cell.addEventListener('touchstart', e => { e.preventDefault(); onBoardClick(r, c); }, { passive: false });
       }
 
       if (state.highlighted.some(([hr,hc])=>hr===r&&hc===c)) {
@@ -554,31 +472,25 @@ function renderBuffer() {
   el.innerHTML = '';
   state.buffer.forEach((slot, i) => {
     const div = document.createElement('div');
-    div.className = 'buf-slot';
+    div.className = 'buf-slot' + (slot ? ' full' : ' empty');
     if (slot) {
-      div.classList.add('full');
       const dot = document.createElement('div');
       dot.className = 'dot';
       dot.style.background = COLORS[slot.color];
-      const count = document.createElement('span');
-      count.className = 'count';
-      count.textContent = '×'+slot.count;
-      div.appendChild(dot); div.appendChild(count);
-      div.title = `点击归位 ${slot.color} 色 ×${slot.count}`;
+      const cnt = document.createElement('span');
+      cnt.className = 'count';
+      cnt.textContent = '×'+slot.count;
+      div.appendChild(dot); div.appendChild(cnt);
+      div.title = `点击归位 ${EMOJI[slot.color]} ×${slot.count}`;
       div.addEventListener('click', () => onBufferClick(i));
-      div.addEventListener('touchstart', (e)=>{ e.preventDefault(); onBufferClick(i); }, {passive:false});
-    } else {
-      div.classList.add('empty');
-      div.title = '空槽位';
+      div.addEventListener('touchstart', e => { e.preventDefault(); onBufferClick(i); }, { passive: false });
     }
     el.appendChild(div);
   });
 }
 
-// ============ 交互逻辑 ============
-function bufferUsed() {
-  return state.buffer.reduce((s, slot) => s + (slot ? slot.count : 0), 0);
-}
+// ============ 交互 ============
+function bufferUsed() { return state.buffer.reduce((s, x) => s + (x ? x.count : 0), 0); }
 function bufferFree() { return state.bufferCap - bufferUsed(); }
 
 function onBoardClick(r, c) {
@@ -586,77 +498,66 @@ function onBoardClick(r, c) {
   const info = state.board[r][c];
   if (info.locked || info.inBuffer) return;
 
-  if (state.highlighted.length > 0) {
-    // 已有高亮：再次点击则尝试吸附
-    const domain = bfs(r, c);
-    const sameDomain = domain.length === state.highlighted.length &&
-      domain.every(([dr,dc]) => state.highlighted.some(([hr,hc])=>hr===dr&&hc===dc));
+  const domain = bfs(r, c);
 
-    if (sameDomain) {
-      // 点击同一区域 → 吸附
-      if (domain.length <= bufferFree()) {
-        absorbDomain(domain);
-      } else {
-        failDrop(domain);
-      }
+  if (state.highlighted.length > 0) {
+    // 再次点击 → 吸附
+    if (domain.length <= bufferFree()) {
+      absorbDomain(domain);
     } else {
-      // 点击不同区域 → 先检查新区域
-      if (domain.length <= bufferFree()) {
-        state.highlighted = domain;
-        renderBoard();
-        absorbDomain(domain);
-      } else {
-        failDrop(domain);
-        state.highlighted = [];
-        renderBoard();
-      }
+      failDrop(domain);
     }
     state.highlighted = [];
     renderBoard();
   } else {
-    // 无高亮：点击后高亮
-    const domain = bfs(r, c);
+    // 第一次点击 → 高亮
     state.highlighted = domain;
     renderBoard();
   }
 }
 
 function absorbDomain(domain) {
-  const hist = {
-    board: JSON.parse(JSON.stringify(state.board.map(row=>row.map(c=>({...c}))))),
-    buffer: state.buffer.map(s=>s?{...s}:null),
+  state.history.push({
+    board: JSON.parse(JSON.stringify(state.board.map(row=>row.map(x=>({...x}))))),
+    buffer: state.buffer.map(x=>x?{...x}:null),
     steps: state.steps
-  };
-  state.history.push(hist);
+  });
 
   const color = state.board[domain[0][0]][domain[0][1]].color;
 
+  // 动画：飞走
   domain.forEach(([r,c]) => {
-    state.board[r][c].inBuffer = true;
+    const idx = r*state.size + c;
+    const cell = document.querySelectorAll('.cell')[idx];
+    if (cell) cell.classList.add('absorbing');
   });
 
-  const existSlot = state.buffer.findIndex(s=>s&&s.color===color);
-  if (existSlot >= 0) {
-    state.buffer[existSlot].count += domain.length;
-  } else {
-    const emptySlot = state.buffer.findIndex(s=>s===null);
-    if (emptySlot >= 0) state.buffer[emptySlot] = { color, count: domain.length };
-  }
+  setTimeout(() => {
+    domain.forEach(([r,c]) => { state.board[r][c].inBuffer = true; });
 
-  state.steps++;
-  renderAll();
+    const exist = state.buffer.findIndex(s=>s&&s.color===color);
+    if (exist >= 0) {
+      state.buffer[exist].count += domain.length;
+    } else {
+      const empty = state.buffer.findIndex(s=>s===null);
+      if (empty >= 0) state.buffer[empty] = { color, count: domain.length };
+    }
+
+    state.steps++;
+    renderAll();
+  }, 280);
 }
 
 function failDrop(domain) {
   domain.forEach(([r,c]) => {
     const idx = r*state.size + c;
-    const cells = document.querySelectorAll('.cell');
-    if (cells[idx]) {
-      cells[idx].classList.add('no-drop');
-      setTimeout(()=>cells[idx].classList.remove('no-drop'), 400);
+    const cell = document.querySelectorAll('.cell')[idx];
+    if (cell) {
+      cell.classList.add('no-drop');
+      setTimeout(()=>cell.classList.remove('no-drop'), 400);
     }
   });
-  showToast('缓冲区空间不足！整组禁止放入');
+  showToast('暂存区空间不足！整组禁止放入');
 }
 
 function onBufferClick(slotIdx) {
@@ -664,51 +565,52 @@ function onBufferClick(slotIdx) {
   const slot = state.buffer[slotIdx];
   if (!slot) return;
 
-  const color = slot.color;
-  // 找到所有未锁定、未在缓冲区、且目标颜色 = 该颜色的格子
+  // 找目标格：未锁定、未在缓冲区、且 target = 该颜色
   const targets = [];
   for (let r=0; r<state.size; r++)
     for (let c=0; c<state.size; c++) {
       const info = state.board[r][c];
-      if (!info.locked && !info.inBuffer && state.target[r][c] === color) {
+      if (!info.locked && !info.inBuffer && state.target[r][c] === slot.color) {
         targets.push([r,c]);
       }
     }
 
   if (targets.length === 0) {
     const el = document.querySelectorAll('.buf-slot')[slotIdx];
-    el.classList.add('cannot-return');
-    setTimeout(()=>el.classList.remove('cannot-return'), 500);
-    showToast(`没有 ${color} 色的目标位置！`);
+    el.classList.add('cannot');
+    setTimeout(()=>el.classList.remove('cannot'), 500);
+    showToast(`没有 ${EMOJI[slot.color]} 的目标位置！`);
     return;
   }
 
-  // 保存历史
   state.history.push({
-    board: JSON.parse(JSON.stringify(state.board.map(row=>row.map(c=>({...c}))))),
-    buffer: state.buffer.map(s=>s?{...s}:null),
+    board: JSON.parse(JSON.stringify(state.board.map(row=>row.map(x=>({...x}))))),
+    buffer: state.buffer.map(x=>x?{...x}:null),
     steps: state.steps
   });
 
-  // 尽可能归位（上限：目标格子数 和 buffer中的数量）
   const count = Math.min(slot.count, targets.length);
-  for (let i=0; i<count; i++) {
-    const [tr,tc] = targets[i];
-    state.board[tr][tc].inBuffer = false;
-    state.board[tr][tc].locked = true;
-  }
+  // 归位动画
+  targets.slice(0, count).forEach(([r,c], i) => {
+    const idx = r*state.size + c;
+    setTimeout(() => {
+      const cell = document.querySelectorAll('.cell')[idx];
+      if (cell) cell.classList.add('lock-bounce');
+    }, i * 60);
+  });
 
-  // 更新缓冲区
-  const remaining = slot.count - count;
-  if (remaining > 0) {
-    state.buffer[slotIdx] = { color, count: remaining };
-  } else {
-    state.buffer[slotIdx] = null;
-  }
-
-  state.steps++;
-  renderAll();
-  checkWin();
+  setTimeout(() => {
+    for (let i=0; i<count; i++) {
+      const [tr,tc] = targets[i];
+      state.board[tr][tc].inBuffer = false;
+      state.board[tr][tc].locked = true;
+    }
+    const remain = slot.count - count;
+    state.buffer[slotIdx] = remain > 0 ? { color: slot.color, count: remain } : null;
+    state.steps++;
+    renderAll();
+    checkWin();
+  }, count * 60 + 100);
 }
 
 function checkWin() {
@@ -720,11 +622,15 @@ function checkWin() {
   setTimeout(() => {
     document.getElementById('winMsg').textContent = `用了 ${state.steps} 步完成！`;
     document.getElementById('win-overlay').classList.add('show');
-  }, 300);
+    // 全屏闪光
+    document.body.style.transition = 'filter 0.3s';
+    document.body.style.filter = 'brightness(2)';
+    setTimeout(() => { document.body.style.filter = ''; }, 400);
+  }, 350);
 }
 
 function undo() {
-  if (state.history.length === 0) return;
+  if (!state.history.length) return;
   const prev = state.history.pop();
   state.board = prev.board;
   state.buffer = prev.buffer;
@@ -737,7 +643,7 @@ function showToast(msg) {
   const t = document.getElementById('toast');
   t.textContent = msg;
   t.classList.add('show');
-  setTimeout(()=>t.classList.remove('show'), 1800);
+  setTimeout(()=>t.classList.remove('show'), 2000);
 }
 
 // ============ 启动 ============
