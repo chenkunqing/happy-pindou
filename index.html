@@ -95,11 +95,28 @@
     transform: translateZ(0);
     overflow: visible;
   }
+  .cell {
+    border-radius: 6px;
+    position: relative;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer;
+    transition: transform 0.12s, box-shadow 0.12s, opacity 0.2s;
+    transform: translateZ(0);
+    overflow: visible;
+  }
+  /* 格子底色 = 目标颜色 */
+  .cell .floor {
+    position: absolute; inset: 0;
+    border-radius: 6px;
+    opacity: 0.35;
+    transition: opacity 0.2s;
+  }
   .cell .dot {
-    width: 80%; height: 80%;
+    width: 78%; height: 78%;
     border-radius: 50%;
     transition: all 0.15s;
     box-shadow: inset -2px -2px 6px rgba(0,0,0,0.3), inset 2px 2px 6px rgba(255,255,255,0.15);
+    position: relative; z-index: 1;
   }
   .cell.locked .dot {
     box-shadow: 0 0 8px var(--lock-glow), 0 0 2px #fff, inset -2px -2px 6px rgba(0,0,0,0.3);
@@ -496,24 +513,30 @@ function renderBoard() {
       cell.className = 'cell';
       cell.dataset.r = r; cell.dataset.c = c;
       const info = state.board[r][c];
+      const floor = document.createElement('div');
+      floor.className = 'floor';
+      floor.style.background = COLORS[state.target[r][c]];
       const dot = document.createElement('div');
       dot.className = 'dot';
       dot.style.background = COLORS[info.color];
 
       if (info.locked) {
         cell.classList.add('locked');
+        cell.appendChild(floor);
         cell.appendChild(dot);
       } else if (info.inBuffer) {
         cell.classList.add('in-buffer');
+        cell.appendChild(floor);
         cell.appendChild(dot);
       } else {
-        // 未锁定且不在缓冲区：可点击
+        cell.appendChild(floor);
         cell.appendChild(dot);
         cell.addEventListener('click', () => onBoardClick(r, c));
         cell.addEventListener('touchstart', (e) => { e.preventDefault(); onBoardClick(r, c); }, { passive: false });
-        // 目标提示：显示匹配高亮
-        if (state.showHint && info.color === state.target[r][c]) {
-          cell.classList.add('hint-match');
+        // 棋子颜色 = 目标颜色 → 已正确，轻微提示
+        if (info.color === state.target[r][c]) {
+          dot.style.boxShadow = '0 0 6px rgba(255,255,255,0.6), inset -2px -2px 6px rgba(0,0,0,0.3)';
+          floor.style.opacity = '0.5';
         }
       }
 
